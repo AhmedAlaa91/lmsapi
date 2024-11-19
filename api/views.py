@@ -59,10 +59,11 @@ class UpdateCourseLessonsView(UpdateAPIView):
     """
     permission_classes = [IsAuthenticated]
     serializer_class=LessonsUpdateRequestSerializer
+    queryset = Lesson.objects.all() 
     def put(self, request, pk):
         course = get_object_or_404(Course, pk=pk)
         
-        # Validate input using LessonsUpdateRequestSerializer
+        
         serializer = LessonsUpdateRequestSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -71,13 +72,13 @@ class UpdateCourseLessonsView(UpdateAPIView):
 
         for lesson in lesson_data:
             lesson_id = lesson.get('id')
-            if lesson_id:  # Update, delete, or re-associate an existing lesson
+            if lesson_id:  # Update, delete, or sign an existing lesson
                 lesson_instance = get_object_or_404(Lesson, pk=lesson_id)
 
                 if lesson.get('remove', False):  # Delete the lesson
                     lesson_instance.delete()
-                else:  # Update or re-associate the lesson
-                    lesson_instance.course = course  # Re-associate with the current course
+                else:  # Update lesson
+                    lesson_instance.course = course  
                     for key, value in lesson.items():
                         if key not in ['id', 'remove']:
                             setattr(lesson_instance, key, value)
